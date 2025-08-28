@@ -55,7 +55,7 @@ app.use(rateLimiter);
 app.use(logger);
 
 // 路由
-app.use('/v1', require('./router/index'));
+app.use('/api/v1', require('./router/index'));
 
 const port = process.env.INIT == 1 ? 10002 : process.env.SERVER_PORT
 app.listen(port, function () {

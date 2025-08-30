@@ -33,7 +33,9 @@ const rateLimiter = (req, res, next) => {
   } else {
     ipAddress = req.connection.remoteAddress;
   }
+  ipAddress = ipAddress.replace('::ffff:', '');
   console.log('Client IP:', ipAddress);
+  req.ipAddress = ipAddress;
   if (!rateLimitCache.has(ipAddress)) {
     rateLimitCache.set(ipAddress, 1);
   } else {

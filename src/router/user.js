@@ -29,7 +29,7 @@ async function login(req, resp) {
           return successResp(resp, { ...isUser.dataValues }, '访问+1')
         }
       }
-      const user = await Model.User.create(req.body, { transaction: t })
+      const user = await Model.User.create({...req.body, ip: req.ipAddress}, { transaction: t })
       return successResp(resp, { id: user.id }, '第一次')
     })
   } catch (error) {

@@ -24,15 +24,24 @@ app.use(express.urlencoded({ limit: '2mb', extended: false }));
 const rateLimitCache = new Map();
 setInterval(() => rateLimitCache.clear(), 20000);
 const rateLimiter = (req, res, next) => {
-  let ip = req.headers['authorization'] || req.body.id;
-  if (!rateLimitCache.has(ip)) {
-    rateLimitCache.set(ip, 1);
+  let ipAddress;
+  // 1. 直接从req对象中获取
+  ipAddress = req.ip;
+  // 2. 如果使用了Nginx等反向代理，可能需要这样获取
+  if (req.headers && req.headers['x-forwarded-for']) {
+    ipAddress = req.headers['x-forwarded-for'].split(',')[0];
   } else {
-    const count = rateLimitCache.get(ip);
+    ipAddress = req.connection.remoteAddress;
+  }
+  console.log('Client IP:', ipAddress);
+  if (!rateLimitCache.has(ipAddress)) {
+    rateLimitCache.set(ipAddress, 1);
+  } else {
+    const count = rateLimitCache.get(ipAddress);
     if (count >= 100) {
       return res.status(429).send('Too Many Requests');
     }
-    rateLimitCache.set(ip, count + 1);
+    rateLimitCache.set(ipAddress, count + 1);
   }
   next();
 };
@@ -53,7 +62,9 @@ app.use(rateLimiter);
 
 // 日志中间件
 app.use(logger);
-
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
 // 路由
 app.use('/api/v1', require('./router/index'));
 
